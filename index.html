@@ -18,7 +18,7 @@ Metadata is used by browsers (how to display content), by search engines (keywor
 Metadata is used by browsers (how to display content), by search engines (keywords), and other web services.
 -->
 
-	<title>I am learning D3</title>
+	<title>D3.JS histogram</title>
 	
 <!--To read external CCS-->	
 	<link rel="stylesheet" href="css/main.css">
@@ -28,8 +28,11 @@ Metadata is used by browsers (how to display content), by search engines (keywor
 	<script  type="text/javascript" src="d3/d3.min.js"></script>
 <!--To read external js-->	
 
-<!--For tooltops. more info in http://labratrevenge.com/d3-tip/-->	
-	<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+    <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script> 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.0/simple_statistics.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 
 <style>
 
@@ -42,469 +45,109 @@ Metadata is used by browsers (how to display content), by search engines (keywor
 <body>
 <!--Place all DOM elements here -->
 
+<script src="histogram.js"></script> 
 
 <script>
 //Write your code here
 
+var fix_body_length = "no" //yes or no
 
-//Canvas dimensions and margins
-//Using these margings solve the problem of the x axis not
-//fitting in the svg. 
-//It also solve the problem of the padding
-//in the bottom of the x axis
-//var margin = {top: 30, right: 30, bottom: 30, left: 30},
-var margin = {top: 20, bottom: 20, left:20, right: 20};
-//var margin = {top: 0, bottom: 0, left: 0, right: 0},
-
-//When creating the svg the actual dimension is the the width and
-//height without the margins
-var width = 600 - margin.left - margin.right;
-var height = 400 - margin.top - margin.bottom;
-var padding = 30;
-
-
-//To create the plot ara equal to the browser width and height plus some margin
-//Responsive but remember to refresh to get new size
-// var width = window.innerWidth - 2*margin.left - 2*margin.right;
-// var height = window.innerHeight - 2*margin.top - 2*margin.bottom;
-// var padding = 30;
-
-
-
-//Define spacing between bars
-var gap = 1;
-
-//Define number of bins to plot
-var number_of_bins = 20;
-
-//column to sample in the input data
-var column_s = 4;
-
-//title 
-var column_t = 0;
-
-
-
-//Add some offset
-//var xOffset = 20;     //offset of graph and axis from right
-var xOffset = 30;     	//offset of graph and axis from right gives space for legend or something else
-var yOffset = 40;     	//offset of graph and axis from top
-
-var xa_start = 0;		//offset of left axis and graph
-var ya_start = 0;		//offset of bottom axis and graph
-var shift_ax = 0;		//translate bottom axis 
-var shift_ay = 0;		//translate left axis
-
-
-//Start and end of clipping
-var xc_begin  = 0;
-var xc_Offset = 80;			//usually same as xOffSet if you want to clip to the end of the axis
-var xc_end 	  = xc_Offset + xc_begin;
-var yc_begin  = 0;
-var yc_Offset = 60;			//usually same as yOffSet if you want to clip to the ens of the axis
-var yc_end 	  = yc_Offset + yc_begin;
-//Start and end of clipping
-
-
-//Legend position
-var legend_x  = 45;
-var legend_y  = 20;
-//Legend position
-
-
-//x label position
-//var text_padding_axx = width/2 - xOffset;
-var text_padding_axx = width/2 - margin.right;
-var text_padding_axy = 35;
-//x label position
-
-
-//y label position
-var text_padding_ayx = 25;
-//var text_padding_ayy = height/2;
-var text_padding_ayy = height/2 + margin.top;
-//y label position
-
-
-//title position
-var title_x = width/2 - margin.right;
-//var title_y = padding;
-var title_y = 20;
-//title position
-
-var a_f = ".d"        //axis number format
-
-
-
-
-//begin F1
-//read in the csv
-
-//d3.csv('dace1_csv.csv', function(error, dataset) 
-d3.csv('dace2_csv.csv', function(error, dataset) 
+//These options will fix the body width and number of columns
+if (fix_body_length == "yes")
 {
+    var body_width = 800
+    var svg_per_row = 2
+    //document.body.style.width = '800px';
+    //$('body').css('width', '800px');
+    $('body').css('width', body_width);
 
-//=========================================================================================================================	
-   	var headerNames = d3.keys(dataset[0]);				//get header, using d3.  Here we get first row
-   	//console.log(headerNames)
-   	
-  	var keys = Object.keys(dataset[0]); 				//get keys outside the loop.  Same as the previous method but we do not use d3 
-  	//console.log(keys)
+    var width = body_width / svg_per_row
+    var aspect_ratio = 1 //height-to-width
+    var height = width * aspect_ratio
+}
 
-	//get id of header to plot as title and axis name
-	var xLabel = Object.keys(dataset[0])[column_s];
-	var tLabel = Object.keys(dataset[0])[column_t];
+myOptions = {
+    //responsive: "no",
+    //width: 400, 
+    //height: 400,
+    width: width,           //use this option when using fix_body_length
+    height: height,         //use this option when using fix_body_length
+    // margintop: 20,
+    // marginbottom: 20,
+    // marginleft: 30,
+    // marginright: 20,
+    //padding: 0,
+    number_of_bins: 20,
+    column_s: 1,
+    agg_type: "count",    //count, sum, mean, std, min, max, variance
+    //xOffset: 60,
+    // yOffset: 30,
+    // shift_ax: 10,
+    // shift_ay: 10,
+    // gap: 1.0,        //gap between bars
+    //legend_x: 0,
+    //legend_y: 0,
+    // text_padding_axx: 250,
+    // text_padding_axy: 35,
+    // text_padding_ayx: 50,
+    // text_padding_ayy: 200,
+    // show_title: 'yes',
+    // title_auto_label: 'no',
+    // title_label: 'Histogram',
+    // title_x: 250,
+    // title_y: 20,
+    //xa_show_legend: "yes",
+    //xa_auto_legend: "no",
+    //xa_legend: "This is a manual legend",
+    //ya_show_legend: "yes",
+    //ya_auto_legend: "yes",
+    //ya_legend: "This is a manual legend",
+    //show_bar_text: "yes",
+    //bar_f: ".2f",
+    //bar_color: "steelblue",
+    //bar_neg_color: "brown",
+    // ax_f: ".d",    //.d, 2f, .4r
+    // ay_f: ".d",
+    // x_ticks: 5,
+    // y_ticks: 5,
+    //axes_font_size: 10,
+    // tooltip_f: ".4f",
+    // enable_transition: "yes",
+    // transition_color: "orange",    
+    // transition_duration: 250,  
+    // enable_tooltip: "yes",
+    //plot_frame: "yes",
+}
+
+//To clone myOptions.  Doing options2 = options1 does not work
+var options1 = jQuery.extend(true, {}, myOptions); //clone object
+//     options1.column_s = 2;
+
+
+
+
+//=========================================================================================================
+//jQuery
+$(document).ready(function() 
+{
+    //Begin read csv
+    d3.csv('dace2_csv.csv', function(error, inputdata)
+    {
+            var myChart = histogramChart(inputdata, options1);
+            //var myChart = lineChart(inputdata,options2);
+            //var myChart = lineChart(inputdata,{id1:"myChart2"},{column_y:2, responsive:"yes"});  
+    //=========================================================================================================================
+    });
+    //End read csv
+
+}); //close jQuery
 //=========================================================================================================================
-
-
-
-//=========================================================================================================================
-  	dataset.forEach(function(d,i) {
-  		keys.forEach(function(key,i){
-  			//console.log(d[key])
-  			//console.log(key)
-
-//From Hayle. Nice way to convert strings to numbers
-//if it is a number it will converted otherwise will remain as a string
-  			orig 		= d[key];
-  			modified 	= Number(orig);
-  			d[key] 		= (typeof orig === "string" && !isNaN(modified)) ? modified : orig;
-
-//easy way to convert string to numbers  			
-  			//d[key] = +d[key]; 						
-  		});
-  		
-    //console.log(d)
-	//console.log(keys[0],d[keys[0]])
-
-  	}); 
-
-
-// console.log(keys)
-// console.log(dataset[0])
-// console.log(dataset[0]['dv1'])
-//=========================================================================================================================
-
-
-
-//=========================================================================================================================
-//map data to new arrays
-//in this case we are mapping the data in column_s of dataset
-//can be a good idea to add a loop here to map all columns
-	var mapdata = dataset.map(function(d,i)
-	{
-		return d[keys[column_s]];
-	});
-
-	//console.log(mapdata);
-//=========================================================================================================================
-
-
-
-//=========================================================================================================================
-//create the histogram with the number of bins defined by number_of_bins	
-	var myHistogram = d3.layout.histogram()
-					.bins(number_of_bins)(mapdata); 				//the data is coming from mapdata
-
-	//console.log(histogram);
-//=========================================================================================================================
-
-
-
-//=========================================================================================================================
-//Compute some parameters
-//find minimum and maximum of histograms
-
-    //var xMin = 0;													
-    var xMin = d3.min(myHistogram, function(d) { return d.x; });
-    var xMax = d3.max(myHistogram, function(d) { return d.x; });
-    //var yMin = 0;
-    var yMin = d3.min(myHistogram, function(d) { return d.x; });													
-    var yMax = d3.max(myHistogram, function(d) { return d.y; });
-
-    //console.log(xMax)
-    //console.log(yMax)
-//=========================================================================================================================
-
-
-
-//=========================================================================================================================
-//create scaling functions
-var xScale = d3.scale.linear()
-			//.domain([d3.min(mapdata),d3.max(mapdata)])
-			.domain([0,d3.max(mapdata)])
-
-			//.range([0,width - xOffset])
-			.range([xa_start, width - xOffset])												
-			.nice();																		//fit nice the axis
-
-var yScale = d3.scale.linear()
-			//.domain([0,d3.max(histogram.mapdata( function (i) {return i.length; }))])		//find the maximum of length (or y) of all bins
-			.domain([0, d3.max(myHistogram, function(d) { return d.y; })])					//return the y value of all bins, equivalent to previous function.  I found this easier
-			//.domain([0, yMax])															//return the y value of all bins, equivalent to previous function.
-			//.domain([0,15])																//if we know the maximum in y
-			//.range([0,height])
-			//.range([height,0])	
-			//.range([height,yOffset])
-			.range([height - ya_start, yOffset])											//To reverse y axis and we add offset
-			.nice();																		//fit nice the axis																	
-
-																	
-
-//console.log(d3.max(mapdata));
-//console.log(d3.min(mapdata));
-//=========================================================================================================================
-
-
-
-//=========================================================================================================================
-//To force axis dimension
-/*
-    //xDomain = [0, 1]
-    xDomain = [xMin, xMax]
-    // Scale the range of the data
-    xScale.domain(xDomain);
-
-    yDomain = [yMin, yMax]
-    // Scale the range of the data
-    yScale.domain(yDomain);
-*/
-
-//console.log(xMin);
-//console.log(xMax);
-//=========================================================================================================================
-
-
-
-//=========================================================================================================================
-//Create axes.  We need to draw them on the svg, this is done at the end
-	var xAxis = d3.svg.axis()
-			.scale(xScale)
-			.orient("bottom")
-			//.ticks(5);
-            //.ticks(number_of_bins);
-			.tickFormat(d3.format(a_f))
-
-	var yAxis = d3.svg.axis()
-                	.scale(yScale)
-                  	.orient("left")
-                  	//.ticks(5);
-                  	//.ticks(yMax)
-                  	//.tickFormat(d3.format(a_f))
-//=========================================================================================================================
-
-
-
-//=========================================================================================================================
-//tooltip function
-//taken form http://bl.ocks.org/Caged/6476579
-	var tip = d3.tip()
-  				.attr('class', 'd3-tip')
-  				.offset([-10, 0])
-//Set or get a tip's HTML content
-//Initialize tooltip 
-  				.html(function(d) {
-    			//return "<strong>Count:</strong> <span style='color:red'>" + d.y + "</span>";
-    			return "<span style='color:white;font-size:10px'>Count:</span> <span style='color:red;font-size:10px'>" + d.y + "</span>";
-  				})
-//=========================================================================================================================
-
-
-
-//=========================================================================================================================
-//create the svg where we are going to plot the histogram
-//add svg to DOM
-	var mySvg = d3.select("body").append("svg")
-
-				.attr("id", "chart")														//add style to svg, defined in main.css													
-				.attr("width", width + margin.left + margin.right)							//The svg does not have margin
-				.attr("height", height + margin.top + margin.bottom)						//The svg does not have margin
-
-//Responsive svg
-    			//.call(responsivefy)
-
-				.append("g")																//not sure what this group is doing		
-				.attr("transform", "translate("+ 2*margin.left + ",0)")  					//to traslate whole svg			
-				//.attr("transform", "translate("+ 2*margin.left +","+ margin.top +")")  	//to traslate whole svg			
-//=========================================================================================================================
-
-
-
-//=========================================================================================================================
-//Invoke the tip in the context of your visualization 
-//apply the tooltip to the svg
-	mySvg.call(tip);
-//=========================================================================================================================
-
-
-
-//=========================================================================================================================
-//bin the data to the document
-//the data is coming from histogram
-	var bars = mySvg.selectAll(".bar")				//style defined in main.css
-				.data(myHistogram)	
-				.enter()
-				.append("g")	
-
-				//.attr("transform", function(d) { return "translate(" + xScale(d.x) + "," + yScale(d.y) + ")"; });		//not needed
-
-//This will add the tooltips
-//Show and hide the tooltip
-      			.on('mouseover', tip.show)
-      			.on('mouseout', tip.hide)
-//=========================================================================================================================
-
-
-
-//=========================================================================================================================
-//append the data to the actual bars
-//remember the bars goes from top to bottom
-	bars.append("rect")													//create the bars using rect
-	
-		// .attr("x", function(d){ return d.x * 50})  					//starts from the left corner.  It is function of x, which is computed in the histogram
-		// .attr("y", 0)												//starts from the top
-		// .attr("width", function(d){ return d.dx * 50 - 2})			//the span of each bin
-		// .attr("height", function(d){ return d.y * 20})				//the frequency of the bin or the heigth
-		// .attr("fill","steelblue")
-	
-	
-//I added d3.min(mapdata) because the histogram does not start from 0,
-//Do not know why it is shifted
-		.attr("x", function(d){ return xScale(d.x - d3.min(mapdata))})  			//starts from the left corner.  It is function of x, which is computed in the histogram
-		//.attr("y", 0)																//starts from the top, no edge swapping
-		.attr("y", function (d) {return yScale(d.y)})								//swap y axis
-		.attr("width", function(d){ return xScale(d.dx) - gap})						//the span of each bin (bar)
-		//.attr("width", function(d){ return xScale(d.dx) - gap - xOffset})			//the span of each bin (bar).  Use this if yaxis is spaced
-		.attr("height", function(d){ return height - yScale(d.y)})					//the frequency of the bin or the height (bar)
-		
-		.attr("fill","steelblue")
-
-//Method to add tooltip using web-browser
-		      		//.append("title")
-   					//.text(function(d){ return "Count " + d.y})
-
-					//Add interaction to change bar color on mouse over
-            		.on("mouseover", function(d, i) {
-                    //change fill
-                    d3.select(this)
-                          	.attr("fill", "orange");
-                  	})
-
-                  //transition out of bar color
-                  	.on("mouseout", function(d) {
-                    d3.select(this)
-                      	.transition()
-                      	.duration(250)
-                      	//.attr("fill", "blue");
-                      	.attr("fill","steelblue")
-
-                    //d3.select("#tooltip").remove();			//not in use
-                  	});
-//=========================================================================================================================
-
-
-
-//=========================================================================================================================
-//add text to the bars
-	// bars.append("text")
-	// 	.classed("bar-label", true)
-	// 	.attr("x", function (d) {return xScale(d.x - d3.min(mapdata))})	
-	// 	//.attr("y", function (d) {return yScale(d.y)})
-	// 	.attr("y", function (d) {return yScale(d.y) - padding/1.3})
-	// 	.attr("dy","20px")
-	// 	.attr("dx",function (d) {return xScale(d.dx)/2})
-	// 	//.attr("dx",function (d) {return xScale(d.dx)/2 - xOffset/2})		//use this if yaxis is spaced	
-	// 	//.attr("fill","black")
-	// 	//.attr("text.anchor","middle")
-	// 	.text(function (d) {return d.y})	//the text is coming from y
-//=========================================================================================================================
-
-
-
-//=========================================================================================================================
-//create a group where to apply the axes
-//This group somehow control xaxis not clear how does it works
-//if i draw axes at this point it will be in front the bars
-//if i draw axes after creating the svg it will be behind the bars
-
-	var group = mySvg.append("g")
-	            //.attr("class", "axis")  									//Assign "axis" class
-	            .classed("axis", true)										//Assign "axis" class
-      			.attr("transform", "translate(0," + (height - shift_ax) + ")")	//translate axis from top to bottom
-				.call(xAxis)
-				    .append("text")
-
-      				//.attr("x", width + xOffset)
-      				//.attr("y", -12)
-            		.attr("y", text_padding_axy )
-            		.attr("x", text_padding_axx )
-
-      				//.attr("class", "label")
-      				.style("font-family", "sans-serif")
-            		.style("font-size", "12px")
-            		.style("font-weight", "bold")
-            		.style("fill", "black")
-            		.style("text-anchor", "middle")
-      				//.style("text-anchor", "end")
-
-      				//.text("QOI");
-      				//.text(function(){ var title = Object.keys(dataset[0])[column_s]; return title});
-      				.text(function(){ return xLabel});
-
-	var group = mySvg.append("g")
-	    		//.attr("class", "axis")  										//Assign "axis" class
-	    		.classed("axis", true)											//Assign "axis" class
-	    		.attr("transform", "translate(" + shift_ay + ",0)")				
-				//.attr("transform", "translate("+ xOffset + ",0)")				//translate axis from top to bottom
-				//.attr("transform", "translate("+ xOffset/10 + ",0)")			//To avoid the axis legend superimpose the bar
-				.call(yAxis)
-				.append("text")
-
-      				.attr("transform", "rotate(-90)")
-            		.attr("y", - text_padding_ayx )
-            		.attr("x", - text_padding_ayy )
-      				//.attr("y", 6)
-      				//.attr("dy", ".71em")
-
-            		//.attr("class", "label")
-      				.style("font-family", "sans-serif")
-            		.style("font-size", "12px")
-            		.style("font-weight", "bold")
-            		.style("fill", "black")
-            		.style("text-anchor", "middle")
-      				//.style("text-anchor", "end")
-
-      				.text("Count");
-//=========================================================================================================================
-
-
-
-//=========================================================================================================================
-        //chart title
-        mySvg.append("text")
-      			.attr("x", title_x )
-      			.attr("y", title_y)
-              	//.attr("dy", "0.35em")
-
-              	.style("text-anchor", "middle")
-              	.style("font-family", "sans-serif")
-              	.style("font-size", "20px")
-              	.style("font-weight", "bold")
-              	.style("fill", "black")
-
-              	//.text("This the title");
-              	//.text(function(){ var title = Object.keys(dataset[0])[column_s]; return title});
-              	.text(function(){return tLabel});
-//=========================================================================================================================
-
-
-
-});                                                
-//end F1
-//read in the csv
-
-
 </script>	
+
+
+<div class="container">
+
+</div>
 
 
 </body>
