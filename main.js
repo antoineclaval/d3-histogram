@@ -6,36 +6,36 @@ function ChartOption( columnsNumber , aggregatorType, binsNumber){
     };
 };
 
-function handleFiles(files) {
-  if (!files.length) {
-    fileList.innerHTML = "<p>No files selected!</p>";
-  } else {
-      fileList.innerHTML = files[0].name ;
-                  drawchart();
-  }
-}
-
-function updateDropdownColumn(columnsNumber){
-    console.log("updateDropdownColumn "+columnsNumber);
+function updateDropdownColumn(columnsNumber, currentColumns){
     $("#columnsSelector").empty();
-    for (var i = 0; i <= columnsNumber; i++) {
+    for (var i = 0; i < columnsNumber; i++) {
         $("#columnsSelector").append('<option value="'+i+'">'+(i+1)+'</option>');
     };
+    if( columnsNumber < currentColumns){ // a previousely loaded csv had a greater number of columns
+        currentColumnsNumber = 0; // forget about the previous selected columns.
+    }
+    $("#columnsSelector").val(currentColumns);
+
 };
 
-function drawchart(){
-    var currentColumnsNumber = $("#columnsSelector option:selected").text() ,
+function drawchart(csvFile){
+
+    // read parameters
+    var currentColumnsNumber = $("#columnsSelector option:selected").val() ,
         currentAggregator = $( "#aggregatorSelector option:selected" ).text() ,
-        currentOptions = ChartOption(currentColumnsNumber,currentAggregator,20) ,
-        currentFile = $("#fileList").text();
+        currentOptions = ChartOption(currentColumnsNumber,currentAggregator,20) ;
+
+    var currentFile = csvFile === undefined  ? $("#fileElem").val() : csvFile ;
+
     $("#chart").remove();
 
     //Begin read csv
     d3.csv(currentFile, function(error, inputdata)
     {
-            var myChart = histogramChart(inputdata, currentOptions);
             var columns = Object.keys( inputdata[0] );  // then taking the first row object and getting an array of the keys
-            updateDropdownColumn(columns.length );
+            updateDropdownColumn(columns.length, currentColumnsNumber ); // update the number of columns of the file
+            var myChart = histogramChart(inputdata, currentOptions);
+
     });
     //End read csv
 };
@@ -45,19 +45,13 @@ function drawchart(){
 //Startup
 $(document).ready(function() 
 {
-    var fileElem = $("#fileElem") ,
-        fileList = $("#fileList");
 
-    $("#fileSelect").click(function (e) {
-      if (fileElem) {
-        fileElem.click();
-      }
-      e.preventDefault(); // prevent navigation to "#"
+    // redraw the chart on change of aggregator or colums number
+    $("#columnsSelector, #aggregatorSelector, #fileElem").change(function(){
+        drawchart(); 
     });
 
-    $("#columnsSelector, #aggregatorSelector").change(function(){
-        drawchart(); // redraw the chart on change of aggregator or colums number
-    });
-    drawchart();
+    // by default, draw for a arbitrary csv
+    drawchart("dace1_csv.csv");
 
 }); 
