@@ -1,3 +1,44 @@
+window.URL = window.URL || window.webkitURL;
+
+/* file handling */
+var fileSelect = $("#fileSelect"),
+    fileElem = $("#fileElem"),
+    fileList = $("#fileList");
+
+fileSelect.click(function (e) {
+  if (fileElem) {
+    fileElem.click();
+  }
+  e.preventDefault(); // prevent navigation to "#"
+});
+
+function handleFiles(files) {
+  if (!files.length) {
+    fileList.innerHTML = "<p>No files selected!</p>";
+  } else {
+    fileList.innerHTML = "";
+    var list = document.createElement("ul");
+    fileList.appendChild(list);
+    for (var i = 0; i < files.length; i++) {
+      var li = document.createElement("li");
+      list.appendChild(li);
+      
+      var img = document.createElement("img");
+      img.src = window.URL.createObjectURL(files[i]);
+      img.height = 60;
+      img.onload = function() {
+        window.URL.revokeObjectURL(this.src);
+      }
+      li.appendChild(img);
+      var info = document.createElement("span");
+      info.innerHTML = files[i].name + ": " + files[i].size + " bytes";
+      li.appendChild(info);
+    }
+  }
+}
+
+/* end file handling */ 
+
 var fix_body_length = "no" //yes or no
 
 //These options will fix the body width and number of columns

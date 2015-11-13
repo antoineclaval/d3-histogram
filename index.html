@@ -49,8 +49,14 @@ Metadata is used by browsers (how to display content), by search engines (keywor
     <option value="1">1</option>
     <option value="2">2</option>
 </select>
-<div class="container"/>
 
+<input type="file" id="fileElem" accept=".csv" style="display:none" onchange="handleFiles(this.files)">
+<a href="#" id="fileSelect">Select some files</a> 
+<div id="fileList">
+  <p>No files selected!</p>
+</div>
+
+<div class="container"/>
 
 
 </body>
