@@ -14,9 +14,12 @@ function updateDropdownColumn(columnsNumber, selectedColumn){
     $("#columnsSelector").val(selectedColumn);
 };
 
-function drawchart(csvFile){
+function drawchart(){
     // read file param
-    var currentFile = csvFile === undefined  ? $("#fileElem").val() : csvFile ;
+    var currentFile = $("#fileElem").val() ;
+    if ( ! currentFile ){
+        currentFile = "dace1_csv.csv"; // load first file arbitrary
+    }
 
     $("#chart").remove();
 
@@ -28,7 +31,6 @@ function drawchart(csvFile){
             currentAggregator = $( "#aggregatorSelector option:selected" ).text();
 
         var columnsNumber = Object.keys( inputdata[0] ).length;  // then taking the first row object and getting an array of the keys
-        console.log(selectedColumn + "/"+ columnsNumber);
         selectedColumn = selectedColumn >= columnsNumber ? 0 : selectedColumn ;
         updateDropdownColumn(columnsNumber, selectedColumn ); // update the number of columns of the file
         var myChart = histogramChart(inputdata, ChartOption(selectedColumn,currentAggregator,20));
@@ -48,6 +50,6 @@ $(document).ready(function()
     });
 
     // by default, draw for a arbitrary csv
-    drawchart("dace1_csv.csv");
+    drawchart();
 
 }); 
