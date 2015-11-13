@@ -6,25 +6,16 @@ function ChartOption( columnsNumber , aggregatorType, binsNumber){
     };
 };
 
-function updateDropdownColumn(columnsNumber, currentColumns){
+function updateDropdownColumn(columnsNumber, selectedColumn){
     $("#columnsSelector").empty();
     for (var i = 0; i < columnsNumber; i++) {
         $("#columnsSelector").append('<option value="'+i+'">'+(i+1)+'</option>');
     };
-    if( columnsNumber < currentColumns){ // a previousely loaded csv had a greater number of columns
-        currentColumnsNumber = 0; // forget about the previous selected columns.
-    }
-    $("#columnsSelector").val(currentColumns);
-
+    $("#columnsSelector").val(selectedColumn);
 };
 
 function drawchart(csvFile){
-
-    // read parameters
-    var currentColumnsNumber = $("#columnsSelector option:selected").val() ,
-        currentAggregator = $( "#aggregatorSelector option:selected" ).text() ,
-        currentOptions = ChartOption(currentColumnsNumber,currentAggregator,20) ;
-
+    // read file param
     var currentFile = csvFile === undefined  ? $("#fileElem").val() : csvFile ;
 
     $("#chart").remove();
@@ -32,10 +23,15 @@ function drawchart(csvFile){
     //Begin read csv
     d3.csv(currentFile, function(error, inputdata)
     {
-            var columns = Object.keys( inputdata[0] );  // then taking the first row object and getting an array of the keys
-            updateDropdownColumn(columns.length, currentColumnsNumber ); // update the number of columns of the file
-            var myChart = histogramChart(inputdata, currentOptions);
+        // read parameters
+        var selectedColumn = $("#columnsSelector option:selected").val() ,
+            currentAggregator = $( "#aggregatorSelector option:selected" ).text();
 
+        var columnsNumber = Object.keys( inputdata[0] ).length;  // then taking the first row object and getting an array of the keys
+        console.log(selectedColumn + "/"+ columnsNumber);
+        selectedColumn = selectedColumn >= columnsNumber ? 0 : selectedColumn ;
+        updateDropdownColumn(columnsNumber, selectedColumn ); // update the number of columns of the file
+        var myChart = histogramChart(inputdata, ChartOption(selectedColumn,currentAggregator,20));
     });
     //End read csv
 };
