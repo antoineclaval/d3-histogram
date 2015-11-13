@@ -368,7 +368,7 @@ function histogramChart(dataset, myOptions)
 	//=========================================================================================================================
 	//create the svg where we are going to plot the histogram
 	//add svg to DOM
-	var mySvg = d3.select("body").append("svg")
+	var mySvg = d3.select("#container").append("svg")
 		.attr("id", "chart") //add style to svg, defined in main.css													
 		.attr("width", width + margin.left + margin.right) //The svg does not have margin
 		.attr("height", height + margin.top + margin.bottom) //The svg does not have margin
