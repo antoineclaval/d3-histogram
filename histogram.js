@@ -368,7 +368,7 @@ function histogramChart(dataset, myOptions)
 	//=========================================================================================================================
 	//create the svg where we are going to plot the histogram
 	//add svg to DOM
-	var mySvg = d3.select("div#container")
+	var mySvg = d3.select("div#graphContainer")
    		.classed("svg-container", true) //container class to make it responsive
 		.append("svg")
 		.attr("preserveAspectRatio", "xMinYMin meet")
