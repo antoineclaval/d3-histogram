@@ -6,37 +6,61 @@ function ChartOption( columnsNumber , aggregatorType, binsNumber){
     };
 };
 
-function updateDropdownColumn(columnsNumber, selectedColumn){
+function updateDropdownColumn(columnsList){
+    var selectedColumn = $("#columnsSelector option:selected").val() 
     $("#columnsSelector").empty();
-    for (var i = 0; i < columnsNumber; i++) {
-        $("#columnsSelector").append('<option value="'+i+'">'+(i+1)+'</option>');
+    var selectedColumn = selectedColumn >= columnsList.lenght ? 0 : selectedColumn ;
+    for (var i = 0; i < columnsList.lenght; i++) {
+        $("#columnsSelector").append('<option value="'+i+'">'+(columnsList[i])+'</option>');
     };
     $("#columnsSelector").val(selectedColumn);
 };
 
-function drawchart(){
-    // read file param
-    var currentFile = $("#fileElem").val() ;
-    if ( ! currentFile ){
-        currentFile = "dace1_csv.csv"; // load first file arbitrary
-    }
+function drawchart(rawInput){
 
-    $("#chart").remove();
-
-    //Begin read csv
-    d3.csv(currentFile, function(error, inputdata)
-    {
+    var inputdata = rawInput;
         // read parameters
-        var selectedColumn = $("#columnsSelector option:selected").val() ,
-            currentAggregator = $( "#aggregatorSelector option:selected" ).text();
+    var currentAggregator = $( "#aggregatorSelector option:selected" ).text();
 
-        var columnsNumber = Object.keys( inputdata[0] ).length;  // then taking the first row object and getting an array of the keys
-        selectedColumn = selectedColumn >= columnsNumber ? 0 : selectedColumn ;
-        updateDropdownColumn(columnsNumber, selectedColumn ); // update the number of columns of the file
-        var myChart = histogramChart(inputdata, ChartOption(selectedColumn,currentAggregator,20));
-    });
-    //End read csv
+    //updateDropdownColumn(columnsNumber, selectedColumn ); // update the number of columns of the file
+    var myChart = histogramChart(inputdata, ChartOption(1,currentAggregator,20));
 };
+
+
+// Method that checks that the browser supports the HTML5 File API
+function browserSupportFileUpload() {
+    var isCompatible = false;
+    if (window.File && window.FileReader && window.FileList && window.Blob) {
+    isCompatible = true;
+    }
+    return isCompatible;
+}
+
+// Method that reads and processes the selected file
+function upload(evt) {
+if (!browserSupportFileUpload()) {
+    alert('The File APIs are not fully supported in this browser!');
+    } else {
+        var data = null;
+        var file = evt.target.files[0];
+        var reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = function(event) {
+            var csvData = event.target.result;
+            data = $.csv.toArrays(csvData);
+            if (data && data.length > 0) {
+              console.log('Imported -' + data.length + '- rows successfully!');
+              updateDropdownColumn(data.shift());
+              drawchart(data);
+            } else {
+                alert('No data to import!');
+            }
+        };
+        reader.onerror = function() {
+            alert('Unable to read ' + file.fileName);
+        };
+    }
+}
 
 
 //=========================================================================================================
@@ -45,9 +69,11 @@ $(document).ready(function()
 {
 
     // redraw the chart on change of aggregator or colums number
-    $("#columnsSelector, #aggregatorSelector, #fileElem").change(function(){
+    $("#columnsSelector, #aggregatorSelector").change(function(){
         drawchart(); 
     });
+
+    $("#fileElem").change(upload);
 
     // by default, draw for a arbitrary csv
     drawchart();
