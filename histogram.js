@@ -2,6 +2,7 @@ function histogramChart(dataset, myOptions)
 
 {
 
+	var _dataset = dataset.slice() ;
 	//=========================================================================================================================
 	//svg dimensions and margins
 
@@ -21,30 +22,12 @@ function histogramChart(dataset, myOptions)
 		left: marginleft
 	};
 
+	var width = typeof(myOptions.width) !== "undefined" ? myOptions.width : 400;
+	var height = typeof(myOptions.height) !== "undefined" ? myOptions.height : 300;
+	var padding = typeof(myOptions.padding) !== "undefined" ? myOptions.padding : 0;
 
-	var responsive = typeof(myOptions.responsive) !== "undefined" ? myOptions.responsive : "no";
-
-	if (responsive == "yes")
-	{
-		//To get width and height of body element
-		var width = window.innerWidth - margin.left / 2 - margin.right / 2;
-		var height = window.innerHeight - margin.top / 2 - margin.bottom / 2;
-
-		//This one gets the width and height of the div
-		//var width = $("#myChart").width();
-
-		//console.log(window.innerWidth)
-		//console.log(window.innerHeight)
-	}
-	else
-	{
-		var width = typeof(myOptions.width) !== "undefined" ? myOptions.width : 400;
-		var height = typeof(myOptions.height) !== "undefined" ? myOptions.height : 300;
-		var padding = typeof(myOptions.padding) !== "undefined" ? myOptions.padding : 0;
-	};
-
-	var w1 = width; //width
-	var h1 = height; //height
+	var w1 = 400; //width
+	var h1 = 300; //height
 
 	var width = w1 - margin.left - margin.right;
 	var height = h1 - margin.top - margin.bottom;
@@ -100,26 +83,6 @@ function histogramChart(dataset, myOptions)
 	//translate left axis     
 	var shift_ay = typeof(myOptions.shift_ay) !== "undefined" ? myOptions.shift_ay : 0;
 	//=========================================================================================================================
-
-
-
-	//=========================================================================================================================
-	//EXPERIMENTAL
-
-	//Start and end of clipping
-	// var xc_begin  = 0;
-	// var xc_Offset = 0;     //usually same as xOffSet if you want to clip to the end of the axis
-	// //var xc_end    = 0;
-	// var xc_end    = xc_Offset + xc_begin;
-	// var yc_begin  = 0;
-	// var yc_Offset = 0;     //usually same as yOffSet if you want to clip to the ens of the axis
-	// //var yc_end    = yc_Offset + yc_begin;
-	// var yc_end    = 0;
-	//Start and end of clipping
-
-	//EXPERIMENTAL
-	//=========================================================================================================================
-
 
 
 	//=========================================================================================================================
@@ -220,21 +183,20 @@ function histogramChart(dataset, myOptions)
 
 
 	//=========================================================================================================================	
-	var headerNames = d3.keys(dataset[0]); //get header, using d3.  Here we get first row
-	//console.log(headerNames)
 
-	var keys = Object.keys(dataset[0]); //get keys outside the loop.  Same as the previous method but we do not use d3 
+	var keys = Object.keys(_dataset[0]); //get keys outside the loop.  Same as the previous method but we do not use d3 
 	//console.log(keys)
 
 	//get id of header to plot as title and axis name
-	var xLabel = Object.keys(dataset[0])[column_s];
-	var tLabel = Object.keys(dataset[0])[column_t];
+	var xLabel = _dataset[0][column_s];
+	var tLabel = _dataset[0][column_t];
+	_dataset.shift();// delete first line of data containing header. 
 	//=========================================================================================================================
 
 
 
 	//=========================================================================================================================
-	dataset.forEach(function(d, i)
+	_dataset.forEach(function(d, i)
 	{
 		keys.forEach(function(key, i)
 		{
@@ -250,9 +212,9 @@ function histogramChart(dataset, myOptions)
 
 	//=========================================================================================================================
 	//map data to new arrays
-	//in this case we are mapping the data in column_s of dataset
+	//in this case we are mapping the data in column_s of _dataset
 	//can be a good idea to add a loop here to map all columns
-	var mapdata = dataset.map(function(d, i)
+	var mapdata = _dataset.map(function(d, i)
 	{
 		return d[keys[column_s]];
 	});
@@ -552,7 +514,7 @@ function histogramChart(dataset, myOptions)
 			.style("text-anchor", "middle")
 			//.style("text-anchor", "end")
 			//.text("QOI");
-			//.text(function(){ var title = Object.keys(dataset[0])[column_s]; return title});
+			//.text(function(){ var title = Object.keys(_dataset[0])[column_s]; return title});
 			.text(function()
 			{
 				return xLabel;
@@ -618,7 +580,7 @@ function histogramChart(dataset, myOptions)
 				.style("font-weight", "bold")
 				.style("fill", "black")
 				//.text("This the title");
-				//.text(function(){ var title = Object.keys(dataset[0])[column_s]; return title});
+				//.text(function(){ var title = Object.keys(_dataset[0])[column_s]; return title});
 				.text(function()
 				{
 					return tLabel;
@@ -636,7 +598,7 @@ function histogramChart(dataset, myOptions)
 				.style("font-weight", "bold")
 				.style("fill", "black")
 				//.text("This the title");
-				//.text(function(){ var title = Object.keys(dataset[0])[column_s]; return title});
+				//.text(function(){ var title = Object.keys(_dataset[0])[column_s]; return title});
 				.text(title_label);
 		};
 

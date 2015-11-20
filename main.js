@@ -1,3 +1,5 @@
+var dataGlobal = null ;
+
 function ChartOption( columnsNumber , aggregatorType, binsNumber){
     return {
         number_of_bins: binsNumber,
@@ -10,20 +12,20 @@ function updateDropdownColumn(columnsList){
     var selectedColumn = $("#columnsSelector option:selected").val() 
     $("#columnsSelector").empty();
     var selectedColumn = selectedColumn >= columnsList.lenght ? 0 : selectedColumn ;
-    for (var i = 0; i < columnsList.lenght; i++) {
-        $("#columnsSelector").append('<option value="'+i+'">'+(columnsList[i])+'</option>');
+    for (var i = 0; i < columnsList.length; i++) {
+        $("#columnsSelector").append('<option value="'+ i +'">'+ (columnsList[i]) +'</option>');
     };
     $("#columnsSelector").val(selectedColumn);
 };
 
-function drawchart(rawInput){
+function drawchart(){
 
-    var inputdata = rawInput;
         // read parameters
-    var currentAggregator = $( "#aggregatorSelector option:selected" ).text();
+    var currentAggregator = $( "#aggregatorSelector option:selected" ).text(),
+        selectedColumn = $("#columnsSelector option:selected").val();
 
     //updateDropdownColumn(columnsNumber, selectedColumn ); // update the number of columns of the file
-    var myChart = histogramChart(inputdata, ChartOption(1,currentAggregator,20));
+    var myChart = histogramChart(dataGlobal, ChartOption(selectedColumn,currentAggregator,20));
 };
 
 
@@ -50,8 +52,9 @@ if (!browserSupportFileUpload()) {
             data = $.csv.toArrays(csvData);
             if (data && data.length > 0) {
               console.log('Imported -' + data.length + '- rows successfully!');
-              updateDropdownColumn(data.shift());
-              drawchart(data);
+              updateDropdownColumn(data[0]);
+              dataGlobal = data ;
+              drawchart();
             } else {
                 alert('No data to import!');
             }
@@ -76,6 +79,6 @@ $(document).ready(function()
     $("#fileElem").change(upload);
 
     // by default, draw for a arbitrary csv
-    drawchart();
+    //drawchart();
 
 }); 
