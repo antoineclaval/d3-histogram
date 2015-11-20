@@ -196,9 +196,9 @@ function histogramChart(dataset, myOptions)
 
 
 	//=========================================================================================================================
-	_dataset.forEach(function(d, i)
+	_dataset.forEach(function(d)
 	{
-		keys.forEach(function(key, i)
+		keys.forEach(function(key)
 		{
 			orig = d[key];
 			modified = Number(orig);
@@ -214,7 +214,7 @@ function histogramChart(dataset, myOptions)
 	//map data to new arrays
 	//in this case we are mapping the data in column_s of _dataset
 	//can be a good idea to add a loop here to map all columns
-	var mapdata = _dataset.map(function(d, i)
+	var mapdata = _dataset.map(function(d)
 	{
 		return d[keys[column_s]];
 	});
@@ -341,7 +341,7 @@ function histogramChart(dataset, myOptions)
 		//.attr("height", height + margin.top + margin.bottom) //The svg does not have margin
 		//Responsive svg
 		//.call(responsivefy)
-		.append("g") //not sure what this group is doing		
+		.append("g") // Y label ( aggregator type)		
 		.attr("transform", "translate(" + 2 * margin.left + ",0)"); //to traslate whole svg			
 
 	//=========================================================================================================================
@@ -405,13 +405,6 @@ function histogramChart(dataset, myOptions)
 		{
 			return aggregator[i] < 0 ? bar_neg_color : bar_color;
 		});
-	//.style("fill",bar_color)
-	// .style("stroke","black")
-	// .style("stroke-width",1)
-	//Method to add tooltip using web-browser, the easy way
-	//.append("title")
-	//.text(function(d){ return "Count " + d.y})
-
 
 	if (enable_transition == "yes")
 	{
@@ -433,8 +426,6 @@ function histogramChart(dataset, myOptions)
 					{
 						return aggregator[i] < 0 ? bar_neg_color : bar_color;
 					});
-
-				//d3.select("#tooltip").remove();			//not in use
 			});
 	};
 
@@ -676,25 +667,6 @@ function histogramChart(dataset, myOptions)
 		}
 		else if (agg_type == "mean")
 		{
-			// var mean = 0;
-			// myHistogram.forEach(function (d,i)
-			// {
-			// 	if (myHistogram[i].length == 0)
-			// 	{
-			// 		aggregator.push(0);
-			// 	}
-
-			// 	else
-			// 	{
-			// 		var sum = 0;
-			// 		d.forEach(function(dd)
-			// 		{
-			// 			sum += dd;
-			// 		});
-			// 		aggregator.push(sum/myHistogram[i].length);
-			// 	}
-			// });	
-
 			myHistogram.forEach(function(d, i)
 			{
 				if (myHistogram[i].length == 0)
@@ -740,8 +712,7 @@ function histogramChart(dataset, myOptions)
 		}
 		else
 		{
-			//console.log("aggregator not in list")
-			alert("Aggregator not in list.\nValid options: count, sum, min, max, mean, std, variance")
+			console.log("Aggregator not in list.\nValid options: count, sum, min, max, mean, std, variance")
 		};
 
 		//console.log(aggregator)
