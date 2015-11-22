@@ -2,7 +2,7 @@ function histogramChart(dataset, myOptions)
 
 {
 
-	var _dataset = dataset.slice() ;
+	var _dataset = dataset.slice() ; // copy original dataset
 	//=========================================================================================================================
 	//svg dimensions and margins
 
@@ -184,7 +184,7 @@ function histogramChart(dataset, myOptions)
 
 	//=========================================================================================================================	
 
-	var keys = Object.keys(_dataset[0]); //get keys outside the loop.  Same as the previous method but we do not use d3 
+	//var keys = Object.keys(_dataset[0]); //get keys outside the loop.  Same as the previous method but we do not use d3 
 	//console.log(keys)
 
 	//get id of header to plot as title and axis name
@@ -194,20 +194,18 @@ function histogramChart(dataset, myOptions)
 	//=========================================================================================================================
 
 
-
 	//=========================================================================================================================
+	// cast data and make sure it's readable
 	_dataset.forEach(function(d)
 	{
-		keys.forEach(function(key)
+		d.forEach(function(cell,i)
 		{
-			orig = d[key];
-			modified = Number(orig);
-			d[key] = (typeof orig === "string" && !isNaN(modified)) ? modified : orig;
+			modified = Number(cell);
+			d[i] = (typeof cell === "string" && !isNaN(modified)) ? modified : cell;
 		});
 
 	});
 	//=========================================================================================================================
-
 
 
 	//=========================================================================================================================
@@ -216,10 +214,9 @@ function histogramChart(dataset, myOptions)
 	//can be a good idea to add a loop here to map all columns
 	var mapdata = _dataset.map(function(d)
 	{
-		return d[keys[column_s]];
+		return d[column_s];
 	});
 
-	//console.log(mapdata);
 	//=========================================================================================================================
 
 
@@ -354,7 +351,6 @@ function histogramChart(dataset, myOptions)
 		.data(myHistogram)
 		.enter()
 		.append("g");
-	//.attr("transform", function(d) { return "translate(" + xScale(d.x)*0. + "," + yScale(d.y)*0 + ")"; });	
 	//=========================================================================================================================
 
 
@@ -406,70 +402,26 @@ function histogramChart(dataset, myOptions)
 			return aggregator[i] < 0 ? bar_neg_color : bar_color;
 		});
 
-	if (enable_transition == "yes")
-	{
-		myRect
-		//Add interaction to change bar color on mouse over
-			.on("mouseover", function(d)
-			{
-				//change fill
-				d3.select(this).style("fill", transition_color);
-			})
-			//transition out of bar color
-			.on("mouseout", function(d, i)
-			{
-				d3.select(this)
-					.transition()
-					.duration(transition_duration)
-					.style("fill", bar_color)
-					.style("fill", function()
-					{
-						return aggregator[i] < 0 ? bar_neg_color : bar_color;
-					});
-			});
-	};
 
-
-	//=========================================================================================================================
-
-
-
-	//=========================================================================================================================
-	//add text to the bars
-	if (show_bar_text == "yes")
-	{
-		bars.append("text")
-			.classed("bar-label", true)
-			//.attr("x", function (d) {return xScale(d.x - d3.min(mapdata))})	
-			.attr("x", function(d)
-			{
-				return xScale(d.x + xScale.domain()[0]);
-			})
-			//.attr("y", function (d) {return yScale(d.y)})
-			.attr("y", function(d, i)
-			{
-				return yScale(aggregator[i]) - padding / 1.3;
-			})
-			.attr("dy", "40px")
-			.attr("dx", function(d)
-			{
-				return xScale(d.dx) / 2;
-			})
-			.style("font-family", "sans-serif")
-			.style("font-size", "10px")
-			.style("font-weight", "bold")
-			.style("fill", "black")
-			//.style("text-anchor", "end")
-			.text(function(d, i)
-			{
-				return d.y;
-			}) //the text is coming from y or frequency
-			//.text(function (d,i) {return d3.format(bar_f)(aggregator[i])})	//the text is coming from aggregator
-	};
-
-	//=========================================================================================================================
-
-
+	myRect
+	//Add interaction to change bar color on mouse over
+		.on("mouseover", function(d)
+		{
+			//change fill
+			d3.select(this).style("fill", transition_color);
+		})
+		//transition out of bar color
+		.on("mouseout", function(d, i)
+		{
+			d3.select(this)
+				.transition()
+				.duration(transition_duration)
+				.style("fill", bar_color)
+				.style("fill", function()
+				{
+					return aggregator[i] < 0 ? bar_neg_color : bar_color;
+				});
+		});
 
 	//=========================================================================================================================
 	//create a group where to apply the axes
@@ -512,8 +464,6 @@ function histogramChart(dataset, myOptions)
 			});
 	};
 
-
-
 	var group = mySvg.append("g")
 		//.attr("class", "axis")  										//Assign "axis" class
 		.classed("axis", true) //Assign "axis" class
@@ -550,53 +500,6 @@ function histogramChart(dataset, myOptions)
 			//.text("Count");
 			.text(yLabel);
 	};
-
-	//=========================================================================================================================
-
-
-
-	//=========================================================================================================================
-	//chart title
-	if (show_title == "yes")
-	{
-		if (title_auto_label == "yes")
-		{
-			mySvg.append("text")
-				.attr("x", title_x)
-				.attr("y", title_y)
-				//.attr("dy", "0.35em")
-				.style("text-anchor", "middle")
-				.style("font-family", "sans-serif")
-				.style("font-size", "20px")
-				.style("font-weight", "bold")
-				.style("fill", "black")
-				//.text("This the title");
-				//.text(function(){ var title = Object.keys(_dataset[0])[column_s]; return title});
-				.text(function()
-				{
-					return tLabel;
-				});
-		}
-		else
-		{
-			mySvg.append("text")
-				.attr("x", title_x)
-				.attr("y", title_y)
-				//.attr("dy", "0.35em")
-				.style("text-anchor", "middle")
-				.style("font-family", "sans-serif")
-				.style("font-size", "20px")
-				.style("font-weight", "bold")
-				.style("fill", "black")
-				//.text("This the title");
-				//.text(function(){ var title = Object.keys(_dataset[0])[column_s]; return title});
-				.text(title_label);
-		};
-
-	};
-	//=========================================================================================================================
-
-
 
 	//=========================================================================================================================
 	//FUNCTIONS HERE
