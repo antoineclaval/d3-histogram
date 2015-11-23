@@ -348,11 +348,23 @@ function histogramChart(dataset, myOptions)
 	//bin the data to the document
 	//the data is coming from histogram
 	var bars = mySvg.selectAll(".bar") //style defined in main.css
-		.data(myHistogram)
-		.enter()
-		.append("g");
+		.data(myHistogram);
+
 	//=========================================================================================================================
 
+
+	bars.enter().append("g")
+		.attr("fill", "#800");
+
+
+
+	//exit 
+    bars.exit()
+	    .transition()
+	    .duration(3000)
+	    .ease("exp")
+	    .attr("width", 0)
+	    .remove();
 
 
 	//=========================================================================================================================
@@ -377,6 +389,9 @@ function histogramChart(dataset, myOptions)
 
 	myRect = bars.append("rect") //create the bars using rect
 		//I added d3.min(mapdata) because the histogram does not start from 0
+		    .transition()
+    .duration(300)
+    .ease("quad")
 		.attr("x", function(d)
 		{
 			return xScale(d.x);
@@ -403,25 +418,28 @@ function histogramChart(dataset, myOptions)
 		});
 
 
-	myRect
-	//Add interaction to change bar color on mouse over
-		.on("mouseover", function(d)
-		{
-			//change fill
-			d3.select(this).style("fill", transition_color);
-		})
-		//transition out of bar color
-		.on("mouseout", function(d, i)
-		{
-			d3.select(this)
-				.transition()
-				.duration(transition_duration)
-				.style("fill", bar_color)
-				.style("fill", function()
-				{
-					return aggregator[i] < 0 ? bar_neg_color : bar_color;
-				});
-		});
+	// Add MouseOver effect to the rect objects.
+	d3.selectAll("rect")
+               .on("mouseover", function(d)
+               {
+                       //change fill
+                       d3.select(this).style("fill", transition_color);
+               })
+               //transition out of bar color
+               .on("mouseout", function(d, i)
+               {
+                       d3.select(this)
+                               .transition()
+                               .duration(transition_duration)
+                               .style("fill", bar_color)
+                               .style("fill", function()
+                               {
+                                       return aggregator[i] < 0 ? bar_neg_color : bar_color;
+                               });
+               });
+
+
+
 
 	//=========================================================================================================================
 	//create a group where to apply the axes
@@ -445,19 +463,13 @@ function histogramChart(dataset, myOptions)
 		};
 
 		group.append("text")
-			//.attr("x", width + xOffset)
-			//.attr("y", -12)
 			.attr("y", text_padding_axy)
 			.attr("x", text_padding_axx)
-			//.attr("class", "label")
 			.style("font-family", "sans-serif")
-			.style("font-size", "12px")
+			.style("font-size", axes_font_size)
 			.style("font-weight", "bold")
 			.style("fill", "black")
 			.style("text-anchor", "middle")
-			//.style("text-anchor", "end")
-			//.text("QOI");
-			//.text(function(){ var title = Object.keys(_dataset[0])[column_s]; return title});
 			.text(function()
 			{
 				return xLabel;
@@ -465,12 +477,9 @@ function histogramChart(dataset, myOptions)
 	};
 
 	var group = mySvg.append("g")
-		//.attr("class", "axis")  										//Assign "axis" class
 		.classed("axis", true) //Assign "axis" class
 		.attr("font-size", axes_font_size)
 		.attr("transform", "translate(" + shift_ay + ",0)")
-		//.attr("transform", "translate("+ xOffset + ",0)")				//translate axis from top to bottom
-		//.attr("transform", "translate("+ xOffset/10 + ",0)")			//To avoid the axis legend superimpose the bar
 		.call(yAxis);
 
 	if (ya_show_legend == "yes")
